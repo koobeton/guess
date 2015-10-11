@@ -1,0 +1,7 @@
+<class type='my.server.resourcesystem.GameResource'>	
+	<lowerBound>1</lowerBound>
+	<upperBound>100</upperBound>
+	<less>Less</less>
+	<more>More</more>
+	<sleepTime>100</sleepTime>
+</class>

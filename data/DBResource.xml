@@ -1,0 +1,8 @@
+<class type='my.server.resourcesystem.DBResource'>
+	<unauthorizedId>0</unauthorizedId>
+	<sleepTime>10</sleepTime>
+	<dbName>guess</dbName>
+	<login>guess</login>
+	<password>guess</password>
+	<limit>10</limit>
+</class>
