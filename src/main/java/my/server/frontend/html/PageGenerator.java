@@ -1,46 +1,65 @@
 package my.server.frontend.html;
 
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import my.server.base.Results;
 import my.server.frontend.UserSession;
 import my.server.resourcesystem.FrontendResource;
 import my.server.resourcesystem.ResourceFactory;
 import my.server.utils.TimeHelper;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PageGenerator {
 
     private static final FrontendResource FRONTEND_RESOURCE =
             (FrontendResource) ResourceFactory.instance().getResource("./data/FrontendResource.xml");
-    private static final int REFRESH_TIME = FRONTEND_RESOURCE.getRefreshTime();
+    private static final String TEMPLATE_LOADER = FRONTEND_RESOURCE.getTemplateLoader();
+    private static final String CORE_PAGE = FRONTEND_RESOURCE.getCorePage();
+    private static final Configuration CFG;
+
+    static {
+        CFG = new Configuration(Configuration.VERSION_2_3_23);
+        try {
+            CFG.setDirectoryForTemplateLoading(new File(TEMPLATE_LOADER));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private static String staticPage(String head, String body, int sessionId) {
-        return "<html>" +
-                    "<head>" +
-                        "<title>Guess the number</title>" +
-                        head +
-                    "</head>" +
-                    "<body>" +
-                        formPost(body, sessionId) +
-                    "</body>" +
-                "</html>";
+        Writer stream = new StringWriter();
+        Map<String, Object> data = new HashMap<>();
+        data.put("body", formPost(body, sessionId));
+        data.put("refreshable", false);
+        try {
+            Template template = CFG.getTemplate(CORE_PAGE);
+            template.process(data, stream);
+        } catch (IOException | TemplateException e) {
+            e.printStackTrace();
+        }
+        return stream.toString();
     }
 
     private static String refreshablePage(String head, String body, int sessionId) {
-        return "<html>" +
-                    "<head>" +
-                        "<title>Guess the number</title>" +
-                        head +
-                        "<script type='text/JavaScript'>" +
-                            "function refresh(){" +
-                                "document.forms[0].submit();" +
-                            "}" +
-                        "</script>" +
-                    "</head>" +
-                    "<body onload='setInterval(function(){refresh()}," + REFRESH_TIME + ");'>" +
-                        formPost(body, sessionId) +
-                    "</body>" +
-                "</html>";
+        Writer stream = new StringWriter();
+        Map<String, Object> data = new HashMap<>();
+        data.put("body", formPost(body, sessionId));
+        data.put("refreshable", true);
+        try {
+            Template template = CFG.getTemplate(CORE_PAGE);
+            template.process(data, stream);
+        } catch (IOException | TemplateException e) {
+            e.printStackTrace();
+        }
+        return stream.toString();
     }
 
     private static String formPost(String text, int sessionId) {

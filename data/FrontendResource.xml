@@ -1,8 +1,9 @@
 <class type='my.server.resourcesystem.FrontendResource'>
-	<refreshTime>1000</refreshTime>
 	<sessionId>sessionId</sessionId>
 	<userName>userName</userName>
 	<startGame>startGame</startGame>
 	<turn>turn</turn>
 	<sleepTime>10</sleepTime>
+    <templateLoader>html</templateLoader>
+	<corePage>corepage.html</corePage>
 </class>

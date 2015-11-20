@@ -4,16 +4,13 @@ import my.server.base.Resource;
 
 public class FrontendResource implements Resource {
 
-    private int refreshTime;
     private String sessionId;
     private String userName;
     private String startGame;
     private String turn;
     private int sleepTime;
-
-    public int getRefreshTime() {
-        return refreshTime;
-    }
+    private String templateLoader;
+    private String corePage;
 
     public String getSessionId() {
         return sessionId;
@@ -33,5 +30,13 @@ public class FrontendResource implements Resource {
 
     public int getSleepTime() {
         return sleepTime;
+    }
+
+    public String getTemplateLoader() {
+        return templateLoader;
+    }
+
+    public String getCorePage() {
+        return corePage;
     }
 }

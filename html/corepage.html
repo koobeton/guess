@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Guess the number</title>
+    <#if refreshable>
+        <script type='text/JavaScript'>
+            function refresh(){
+                document.forms[0].submit();
+            }
+        </script>
+    </#if>
+</head>
+<body<#if refreshable> onload='setInterval(function(){refresh()}, 1000);'</#if>>
+    ${body}
+</body>
+</html>
