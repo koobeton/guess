@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Guess the number</title>
-    <#if refreshable>
+    <#if refreshable??>
         <script type='text/JavaScript'>
             function refresh(){
                 document.forms[0].submit();
@@ -11,7 +11,25 @@
         </script>
     </#if>
 </head>
-<body<#if refreshable> onload='setInterval(function(){refresh()}, 1000);'</#if>>
-    ${body}
+<body<#if refreshable??> onload='setInterval(function(){refresh()}, 1000);'</#if>>
+    <form method="post">
+        <#-- Header -->
+        <hr>
+            [Session ID: <b>${sessionId}</b>]
+            <#if name??> [User name: <b>${name}</b>]</#if>
+            <#if userId??> [User ID: <b>${userId}</b>]</#if>
+            <#if duration??> [Duration: <b>${duration}</b>]</#if>
+        <hr>
+        <#-- Request name -->
+        <#if requestName??>
+            <p>
+                Enter your name:
+                <input name="userName" required autofocus placeholder="Your name">
+                <input type="submit" value="Send">
+            </p>
+        </#if>
+        ${body}
+        <input type="hidden" name="sessionId" value="${sessionId}">
+    </form>
 </body>
 </html>
