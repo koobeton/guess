@@ -9,9 +9,9 @@ import static org.junit.Assert.*;
 
 public class DBServiceTest {
 
-    private static final int USER_ID = 2;
+    private static final int USER_ID = 1;
     private static final String USER_NAME = "Serge";
-    private static final int LIMIT = 8;
+    private static final int LIMIT = 3;
 
     private MessageSystemImpl messageSystem;
     private DBServiceImpl dbService;
