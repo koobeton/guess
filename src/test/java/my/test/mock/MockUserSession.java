@@ -10,4 +10,9 @@ public class MockUserSession extends UserSession {
     public GameReplica getGameReplica() {
         return new GameReplicaImpl(0, 0, 0, "", 0, true);
     }
+
+    @Override
+    public String getUserName() {
+        return "";
+    }
 }

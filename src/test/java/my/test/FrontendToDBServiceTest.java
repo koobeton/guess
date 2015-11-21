@@ -39,7 +39,6 @@ public class FrontendToDBServiceTest {
     public void run() throws Exception {
 
         MockUserSession mockUserSession = new MockUserSession();
-        mockUserSession.setUserName(USER_NAME);
 
         Method method = frontend.getClass().getDeclaredMethod("handleReplica", UserSession.class);
         method.setAccessible(true);
