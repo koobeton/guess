@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,23 @@ public class PageGenerator {
 
     private static final FrontendResource FRONTEND_RESOURCE =
             (FrontendResource) ResourceFactory.instance().getResource("./data/FrontendResource.xml");
+    private static final String DM_SESSION_ID = FRONTEND_RESOURCE.getDmSessionId();
+    private static final String DM_NAME = FRONTEND_RESOURCE.getDmName();
+    private static final String DM_USER_ID = FRONTEND_RESOURCE.getDmUserId();
+    private static final String DM_DURATION = FRONTEND_RESOURCE.getDmDuration();
+    private static final String DM_REQUEST_NAME = FRONTEND_RESOURCE.getDmRequestName();
+    private static final String DM_REFRESHABLE = FRONTEND_RESOURCE.getDmRefreshable();
+    private static final String DM_WAIT_AUTHORIZATION = FRONTEND_RESOURCE.getDmWaitAuthorization();
+    private static final String DM_AUTHORIZATION_OK = FRONTEND_RESOURCE.getDmAuthorizationOK();
+    private static final String DM_GAME_REPLICA = FRONTEND_RESOURCE.getDmGameReplica();
+    private static final String DM_LOWER = FRONTEND_RESOURCE.getDmLower();
+    private static final String DM_UPPER = FRONTEND_RESOURCE.getDmUpper();
+    private static final String DM_MESSAGE = FRONTEND_RESOURCE.getDmMessage();
+    private static final String DM_ATTEMPTS = FRONTEND_RESOURCE.getDmAttempts();
+    private static final String DM_GAME_OVER = FRONTEND_RESOURCE.getDmGameOver();
+    private static final String DM_GOAL = FRONTEND_RESOURCE.getDmGoal();
+    private static final String DM_HIGH_SCORES = FRONTEND_RESOURCE.getDmHighScores();
+
     private static final String TEMPLATE_LOADER = FRONTEND_RESOURCE.getTemplateLoader();
     private static final String CORE_PAGE = FRONTEND_RESOURCE.getCorePage();
     private static final Configuration CFG;
@@ -47,10 +65,10 @@ public class PageGenerator {
 
     private static Map<String, Object> getDataModel(int sessionId, String name, Integer userId, Long duration) {
         Map<String, Object> dataModel = new HashMap<>();
-        dataModel.put("sessionId", String.format("%04d", sessionId));
-        dataModel.put("name", name);
-        dataModel.put("userId", userId);
-        dataModel.put("duration",
+        dataModel.put(DM_SESSION_ID, String.format("%04d", sessionId));
+        dataModel.put(DM_NAME, name);
+        dataModel.put(DM_USER_ID, userId);
+        dataModel.put(DM_DURATION,
                 duration != null ? TimeHelper.formatTime(duration) : null);
         return dataModel;
     }
@@ -67,82 +85,39 @@ public class PageGenerator {
         return getDataModel(sessionId, null, null, null);
     }
 
-    //TODO
-    private static String highScoresTable(UserSession userSession, List<Results> highScores) {
-        String thisSessionName = userSession.getUserName();
-        int thisSessionAttempts = userSession.getGameReplica().getAttempts();
-        long thisSessionTime = userSession.getGameSessionDuration();
-        StringBuilder table = new StringBuilder();
-        int place = 0;
-        table
-                .append("<table border cellpadding=\"3\">")
-                .append("<caption><b>High Scores:<b><caption>")
-                .append("<tr><th>#</th><th>Name</th><th>Attempts</th><th>Time</th></tr>");
-                for (Results score : highScores) {
-                    String currentName = score.getName();
-                    int currentAttempts = score.getAttempts();
-                    long currentTime = score.getTime();
-                    String bgcolor = currentName.equals(thisSessionName)
-                            && currentAttempts == thisSessionAttempts
-                            && currentTime == thisSessionTime
-                            ? "bgcolor=\"yellow\""
-                            : "";
-                    table
-                            .append(String.format("<tr %s>", bgcolor))
-                            .append(String.format("<td align=\"center\">%d</td>",
-                                    ++place))
-                            .append(String.format("<td>%s</td>",
-                                    currentName))
-                            .append(String.format("<td align=\"center\">%d</td>",
-                                    currentAttempts))
-                            .append(String.format("<td align=\"center\">%s</td>",
-                                    TimeHelper.formatTime(currentTime)))
-                            .append("</tr>");
-                }
-        table.append("</table>");
-        return table.toString();
-    }
-
-    //TODO
     public static String getRequestNamePage(UserSession userSession) {
-        int sessionId = userSession.getSessionId();
-        Map<String, Object> dataModel = getDataModel(sessionId);
-        dataModel.put("requestName", true);
 
-        dataModel.put("body", "");
+        int sessionId = userSession.getSessionId();
+
+        Map<String, Object> dataModel = getDataModel(sessionId);
+        dataModel.put(DM_REQUEST_NAME, true);
         return getPage(dataModel);
     }
 
     public static String getWaitAuthorizationPage(UserSession userSession) {
+
         int sessionId = userSession.getSessionId();
         String name = userSession.getUserName();
 
         Map<String, Object> dataModel = getDataModel(sessionId, name);
-        dataModel.put("refreshable", true);
-
-        String body = "<p><b>Wait for authorization!</b></p>";
-
-        dataModel.put("body", body);
+        dataModel.put(DM_REFRESHABLE, true);
+        dataModel.put(DM_WAIT_AUTHORIZATION, true);
         return getPage(dataModel);
-
     }
 
     public static String getAuthorizationOKPage(UserSession userSession) {
+
         int sessionId = userSession.getSessionId();
         String name = userSession.getUserName();
         int userId = userSession.getUserId();
 
         Map<String, Object> dataModel = getDataModel(sessionId, name, userId);
-
-        String body = "<p><b>Authorization OK!</b></p>" +
-                "<hr><input type=\"submit\" name=\"startGame\" value=\"Start game!\">";
-
-        dataModel.put("body", body);
+        dataModel.put(DM_AUTHORIZATION_OK, true);
         return getPage(dataModel);
-
     }
 
     public static String getGamePage(UserSession userSession) {
+
         int sessionId = userSession.getSessionId();
         String name = userSession.getUserName();
         int userId = userSession.getUserId();
@@ -153,21 +128,13 @@ public class PageGenerator {
         int attempts = userSession.getGameReplica().getAttempts();
 
         Map<String, Object> dataModel = getDataModel(sessionId, name, userId, duration);
-
-        String body = "<p>Enter the number between <b>" + lower +"</b> and <b>" + upper + "</b>:</p>" +
-                "<p>" +
-                String.format("<input type=\"number\" name=\"turn\" min=\"%d\" max=\"%d\" step=\"1\" required autofocus placeholder=\"%d ... %d\">",
-                        lower, upper, lower, upper) +
-                "<input type=\"submit\" value=\"Play!\">" +
-                "</p>" +
-                String.format("<hr>[Attempts: <b>%d</b>] %s",
-                        attempts,
-                        message != null ? "[Goal: <b>" + message + "</b>]" : ""
-                );
-
-        dataModel.put("body", body);
+        Map<String, Object> gameReplicaHash = new HashMap<>();
+        gameReplicaHash.put(DM_LOWER, lower);
+        gameReplicaHash.put(DM_UPPER, upper);
+        gameReplicaHash.put(DM_MESSAGE, message);
+        gameReplicaHash.put(DM_ATTEMPTS, attempts);
+        dataModel.put(DM_GAME_REPLICA, gameReplicaHash);
         return getPage(dataModel);
-
     }
 
     public static String getGameOverPage(UserSession userSession, List<Results> highScores) {
@@ -179,14 +146,19 @@ public class PageGenerator {
         int attempts = userSession.getGameReplica().getAttempts();
 
         Map<String, Object> dataModel = getDataModel(sessionId, name, userId, duration);
-
-        String body = "<p><b>Game over!</b></p>" +
-                String.format("<p>You found <b>%d</b> with <b>%d</b> attempts.</p>", goal, attempts) +
-                "<hr>" + highScoresTable(userSession, highScores) +
-                "<hr><input type=\"submit\" name=\"startGame\" value=\"Play again!\">";
-
-        dataModel.put("body", body);
+        Map<String, Object> gameOverHash = new HashMap<>();
+        gameOverHash.put(DM_GOAL, goal);
+        gameOverHash.put(DM_ATTEMPTS, attempts);
+        List<Map<String, Object>> highScoresSequence = new ArrayList<>();
+        for (Results score : highScores) {
+            Map<String, Object> scoreHash = new HashMap<>();
+            scoreHash.put(DM_NAME, score.getName());
+            scoreHash.put(DM_ATTEMPTS, score.getAttempts());
+            scoreHash.put(DM_DURATION, TimeHelper.formatTime(score.getTime()));
+            highScoresSequence.add(scoreHash);
+        }
+        gameOverHash.put(DM_HIGH_SCORES, highScoresSequence);
+        dataModel.put(DM_GAME_OVER, gameOverHash);
         return getPage(dataModel);
-
     }
 }

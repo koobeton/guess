@@ -6,4 +6,20 @@
 	<sleepTime>10</sleepTime>
     <templateLoader>html</templateLoader>
 	<corePage>corepage.html</corePage>
+	<dmSessionId>sessionId</dmSessionId>
+    <dmName>name</dmName>
+    <dmUserId>userId</dmUserId>
+    <dmDuration>duration</dmDuration>
+    <dmRequestName>requestName</dmRequestName>
+    <dmRefreshable>refreshable</dmRefreshable>
+    <dmWaitAuthorization>waitAuthorization</dmWaitAuthorization>
+    <dmAuthorizationOK>authorizationOK</dmAuthorizationOK>
+    <dmGameReplica>gameReplica</dmGameReplica>
+    <dmLower>lower</dmLower>
+    <dmUpper>upper</dmUpper>
+    <dmMessage>message</dmMessage>
+    <dmAttempts>attempts</dmAttempts>
+    <dmGameOver>gameOver</dmGameOver>
+    <dmGoal>goal</dmGoal>
+    <dmHighScores>highScores</dmHighScores>
 </class>

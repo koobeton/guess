@@ -13,6 +13,7 @@
 </head>
 <body<#if refreshable??> onload='setInterval(function(){refresh()}, 1000);'</#if>>
     <form method="post">
+
         <#-- Header -->
         <hr>
             [Session ID: <b>${sessionId}</b>]
@@ -20,6 +21,7 @@
             <#if userId??> [User ID: <b>${userId}</b>]</#if>
             <#if duration??> [Duration: <b>${duration}</b>]</#if>
         <hr>
+
         <#-- Request name -->
         <#if requestName??>
             <p>
@@ -28,7 +30,60 @@
                 <input type="submit" value="Send">
             </p>
         </#if>
-        ${body}
+
+        <#-- Wait for authorization -->
+        <#if waitAuthorization??>
+            <p><b>Wait for authorization!</b></p>
+        </#if>
+
+        <#-- Authorization OK -->
+        <#if authorizationOK??>
+            <p><b>Authorization OK!</b></p>
+            <hr><input type="submit" name="startGame" value="Start game!">
+        </#if>
+
+        <#-- Game in progress -->
+        <#if gameReplica??>
+            <p>
+                Enter the number between <b>${gameReplica.lower}</b> and <b>${gameReplica.upper}</b>:
+            </p>
+            <p>
+                <input type="number" name="turn"
+                       min="${gameReplica.lower}" max="${gameReplica.upper}" step="1"
+                       required autofocus placeholder="${gameReplica.lower} ... ${gameReplica.upper}"
+                >
+                <input type="submit" value="Play!">
+            </p>
+            <hr>[Attempts: <b>${gameReplica.attempts}</b>]<#if gameReplica.message??> [Goal: <b>${gameReplica.message}</b>]</#if>
+        </#if>
+
+        <#-- Game over -->
+        <#if gameOver??>
+            <p>
+                <b>Game over!</b>
+            </p>
+            <p>
+                You found <b>${gameOver.goal}</b> with <b>${gameOver.attempts}</b> attempts.
+            </p>
+            <hr>
+            <table border cellpadding="3">
+                <caption><b>High Scores:</b></caption>
+                <tr><th>#</th><th>Name</th><th>Attempts</th><th>Time</th></tr>
+                <#list gameOver.highScores as score>
+                    <tr<#if name == score.name
+                        && gameOver.attempts == score.attempts
+                        && duration == score.duration> bgcolor="yellow"</#if>>
+                        <td align="center">${score?counter}</td>
+                        <td>${score.name}</td>
+                        <td align="center">${score.attempts}</td>
+                        <td align="center">${score.duration}</td>
+                    </tr>
+                </#list>
+            </table>
+            <hr><input type="submit" name="startGame" value="Play again!">
+        </#if>
+
+        <#-- Session ID holder -->
         <input type="hidden" name="sessionId" value="${sessionId}">
     </form>
 </body>
