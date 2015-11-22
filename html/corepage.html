@@ -16,10 +16,14 @@
 
         <#-- Header -->
         <hr>
-            [Session ID: <b>${sessionId}</b>]
-            <#if name??> [User name: <b>${name}</b>]</#if>
-            <#if userId??> [User ID: <b>${userId}</b>]</#if>
-            <#if duration??> [Duration: <b>${duration}</b>]</#if>
+			<table border cellpadding="3">
+				<tr>
+					<td>Session ID: <b>${sessionId}</b></td>
+					<#if name??><td>User name: <b>${name}</b></td></#if>
+					<#if userId??><td>User ID: <b>${userId}</b></td></#if>
+					<#if duration??><td>Duration: <b>${duration}</b></td></#if>
+				</tr>
+			</table>  
         <hr>
 
         <#-- Request name -->
