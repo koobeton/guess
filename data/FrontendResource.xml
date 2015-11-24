@@ -4,8 +4,8 @@
 	<startGame>startGame</startGame>
 	<turn>turn</turn>
 	<sleepTime>10</sleepTime>
-    <templateLoader>html</templateLoader>
-	<corePage>corepage.html</corePage>
+    <templateLoader>ftl</templateLoader>
+	<corePage>corepage.ftl</corePage>
 	<dmSessionId>sessionId</dmSessionId>
     <dmName>name</dmName>
     <dmUserId>userId</dmUserId>
