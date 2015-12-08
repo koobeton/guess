@@ -58,7 +58,19 @@
                 >
                 <input type="submit" value="Play!">
             </p>
-            <hr>[Attempts: <b>${gameReplica.attempts}</b>]<#if gameReplica.message??> [Goal: <b>${gameReplica.message}</b>]</#if>
+            <hr>
+            <table border cellpadding="3">
+                <tr>
+                    <td>Attempts: <b>${gameReplica.attempts}</b></td>
+                    <#if gameReplica.message??>
+                        <td<#if gameReplica.message == "Less"> bgcolor="red"</#if>
+                           <#if gameReplica.message == "More"> bgcolor="green"</#if>
+                        >
+                            Goal: <b>${gameReplica.message}</b>
+                        </td>
+                    </#if>
+                </tr>
+            </table>
         </#if>
 
         <#-- Game over -->
