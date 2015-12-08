@@ -12,7 +12,7 @@
     </#if>
 </head>
 <body<#if refreshable??> onload='setInterval(function(){refresh()}, 1000);'</#if>>
-    <form method="post">
+    <form action="" method="post">
 
         <#-- Header -->
         <hr>

@@ -6,10 +6,9 @@ import my.server.resourcesystem.DBResource;
 import my.server.resourcesystem.FrontendResource;
 import my.server.resourcesystem.ResourceFactory;
 import my.server.utils.TimeHelper;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -19,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static my.server.frontend.UserSession.State.*;
 
-public class FrontendImpl extends AbstractHandler implements Frontend {
+public class FrontendImpl extends HttpServlet implements Frontend {
 
     private static final FrontendResource FRONTEND_RESOURCE =
             (FrontendResource) ResourceFactory.instance().getResource("./data/FrontendResource.xml");
@@ -45,26 +44,27 @@ public class FrontendImpl extends AbstractHandler implements Frontend {
     }
 
     @Override
-    public void handle(String target,
-                       Request baseRequest,
-                       HttpServletRequest request,
-                       HttpServletResponse response)
-            throws IOException, ServletException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        doPost(req, resp);
+    }
 
-        response.setContentType("text/html; charset=utf-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
 
-        baseRequest.setHandled(true);
+        resp.setContentType("text/html; charset=utf-8");
+        resp.setStatus(HttpServletResponse.SC_OK);
 
         UserSession userSession;
         int sessionId;
         String answer = null;
 
-        if (request.getParameter(SESSION_ID) == null) {
+        if (req.getParameter(SESSION_ID) == null) {
             userSession = new UserSession();
             sessionIdToUserSession.put(userSession.getSessionId(), userSession);
         } else {
-            sessionId = Integer.parseInt(request.getParameter(SESSION_ID));
+            sessionId = Integer.parseInt(req.getParameter(SESSION_ID));
             userSession = sessionIdToUserSession.get(sessionId);
         }
 
@@ -74,7 +74,7 @@ public class FrontendImpl extends AbstractHandler implements Frontend {
                 answer = PageGenerator.getRequestNamePage(userSession);
                 break;
             case WAIT_FOR_NAME:
-                String providedUserName = request.getParameter(USER_NAME);
+                String providedUserName = req.getParameter(USER_NAME);
                 if (providedUserName != null) {
                     userSession.setUserName(providedUserName);
                     Address addressDBS = ms.getAddressService().getAddressDBS();
@@ -90,7 +90,7 @@ public class FrontendImpl extends AbstractHandler implements Frontend {
                 answer = PageGenerator.getWaitAuthorizationPage(userSession);
                 break;
             case AUTHORIZATION_OK:
-                if (request.getParameter(START_GAME) == null) {
+                if (req.getParameter(START_GAME) == null) {
                     answer = PageGenerator.getAuthorizationOKPage(userSession);
                 } else {
                     Address addressGM = ms.getAddressService().getAddressGM();
@@ -104,17 +104,17 @@ public class FrontendImpl extends AbstractHandler implements Frontend {
                 }
                 break;
             case GAME_STARTED:
-                if (request.getParameter(TURN) == null) {
+                if (req.getParameter(TURN) == null) {
                     userSession.restoreGameReplica();
                 } else {
-                    int turn = Integer.parseInt(request.getParameter(TURN));
+                    int turn = Integer.parseInt(req.getParameter(TURN));
                     Address addressGM = ms.getAddressService().getAddressGM();
                     ms.sendMessage(new MsgHandleTurn(getAddress(), addressGM, userSession.getSessionId(), turn));
                 }
                 answer = handleReplica(userSession);
                 break;
             case GAME_OVER:
-                if (request.getParameter(START_GAME) == null) {
+                if (req.getParameter(START_GAME) == null) {
                     userSession.restoreGameReplica();
                 } else {
                     Address addressGM = ms.getAddressService().getAddressGM();
@@ -129,7 +129,7 @@ public class FrontendImpl extends AbstractHandler implements Frontend {
                 break;
         }
 
-        response.getWriter().println(answer);
+        resp.getWriter().println(answer);
     }
 
     private String handleReplica(UserSession userSession) {

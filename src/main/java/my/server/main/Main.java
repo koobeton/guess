@@ -6,6 +6,8 @@ import my.server.gamemechanics.GameMechanicsImpl;
 import my.server.messagesystem.MessageSystemImpl;
 import my.server.resourcesystem.ResourceFactory;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 
 public class Main {
 
@@ -28,7 +30,9 @@ public class Main {
         new Thread(gameMechanics).start();
 
         Server server = new Server(8080);
-        server.setHandler(frontend);
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        context.addServlet(new ServletHolder(frontend), "");
+        server.setHandler(context);
 
         server.start();
         server.join();
