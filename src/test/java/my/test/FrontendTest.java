@@ -3,7 +3,6 @@ package my.test;
 import my.server.frontend.FrontendImpl;
 import my.server.frontend.UserSession;
 import my.server.messagesystem.MessageSystemImpl;
-import my.test.mock.MockUserSession;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,7 +20,7 @@ public class FrontendTest {
     private FrontendImpl frontend;
 
     private Map<Integer, UserSession> sessionIdToUserSession;
-    private MockUserSession mockUserSession;
+    private UserSession userSession;
     private int sessionId;
 
     @SuppressWarnings("unchecked")
@@ -35,13 +34,13 @@ public class FrontendTest {
 
         new Thread(frontend).start();
 
-        mockUserSession = new MockUserSession();
-        sessionId = mockUserSession.getSessionId();
+        userSession = new UserSession();
+        sessionId = userSession.getSessionId();
 
         Field field = frontend.getClass().getDeclaredField("sessionIdToUserSession");
         field.setAccessible(true);
         sessionIdToUserSession = (Map<Integer, UserSession>)field.get(frontend);
-        sessionIdToUserSession.put(sessionId, mockUserSession);
+        sessionIdToUserSession.put(sessionId, userSession);
         field.setAccessible(false);
     }
 

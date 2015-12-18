@@ -1,13 +1,17 @@
 package my.test;
 
+import my.server.base.Frontend;
 import my.server.gamemechanics.GameMechanicsImpl;
 import my.server.messagesystem.MessageSystemImpl;
-import my.test.mock.MockFrontend;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.*;
 
+@RunWith(MockitoJUnitRunner.class)
 public class GameMechanicsTest {
 
     private static final int SESSION_ID = 10;
@@ -17,7 +21,8 @@ public class GameMechanicsTest {
 
     private MessageSystemImpl messageSystem;
     private GameMechanicsImpl gameMechanics;
-    private MockFrontend mockFrontend;
+    @Mock
+    private Frontend mockFrontend;
 
     @Before
     public void setUp() throws Exception {
@@ -27,7 +32,6 @@ public class GameMechanicsTest {
         gameMechanics = new GameMechanicsImpl(messageSystem);
         messageSystem.addGameMechanics(gameMechanics);
 
-        mockFrontend = new MockFrontend(messageSystem);
         messageSystem.addFrontend(mockFrontend);
 
         new Thread(gameMechanics).start();

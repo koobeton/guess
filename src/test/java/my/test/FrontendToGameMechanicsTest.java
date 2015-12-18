@@ -7,7 +7,6 @@ import my.server.frontend.UserSession;
 import my.server.gamemechanics.GameMechanicsImpl;
 import my.server.messagesystem.MessageSystemImpl;
 import my.server.utils.TimeHelper;
-import my.test.mock.MockUserSession;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +21,7 @@ public class FrontendToGameMechanicsTest {
     private GameMechanicsImpl gameMechanics;
 
     private Map<Integer, UserSession> sessionIdToUserSession;
-    private MockUserSession mockUserSession;
+    private UserSession userSession;
     private int sessionId;
 
     @SuppressWarnings("unchecked")
@@ -40,13 +39,13 @@ public class FrontendToGameMechanicsTest {
         new Thread(frontend).start();
         new Thread(gameMechanics).start();
 
-        mockUserSession = new MockUserSession();
-        sessionId = mockUserSession.getSessionId();
+        userSession = new UserSession();
+        sessionId = userSession.getSessionId();
 
         Field field = frontend.getClass().getDeclaredField("sessionIdToUserSession");
         field.setAccessible(true);
         sessionIdToUserSession = (Map<Integer, UserSession>)field.get(frontend);
-        sessionIdToUserSession.put(sessionId, mockUserSession);
+        sessionIdToUserSession.put(sessionId, userSession);
         field.setAccessible(false);
     }
 
@@ -60,7 +59,7 @@ public class FrontendToGameMechanicsTest {
                         addressFrontend,
                         addressGM,
                         sessionId,
-                        mockUserSession.getUserId())
+                        userSession.getUserId())
         );
 
         long firstTime = sessionIdToUserSession.get(sessionId).getGameSessionDuration();
