@@ -3,7 +3,7 @@ package my.test;
 import my.server.frontend.FrontendImpl;
 import my.server.frontend.UserSession;
 import my.server.messagesystem.MessageSystemImpl;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -16,16 +16,16 @@ public class FrontendTest {
     private static final int USER_ID = 10;
     private static final long DURATION = 1000;
 
-    private MessageSystemImpl messageSystem;
-    private FrontendImpl frontend;
+    private static MessageSystemImpl messageSystem;
+    private static FrontendImpl frontend;
 
-    private Map<Integer, UserSession> sessionIdToUserSession;
-    private UserSession userSession;
-    private int sessionId;
+    private static Map<Integer, UserSession> sessionIdToUserSession;
+    private static UserSession userSession;
+    private static int sessionId;
 
     @SuppressWarnings("unchecked")
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception {
 
         messageSystem = new MessageSystemImpl();
 

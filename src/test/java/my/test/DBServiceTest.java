@@ -2,7 +2,7 @@ package my.test;
 
 import my.server.dbservice.DBServiceImpl;
 import my.server.messagesystem.MessageSystemImpl;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -13,11 +13,11 @@ public class DBServiceTest {
     private static final String USER_NAME = "Serge";
     private static final int LIMIT = 3;
 
-    private MessageSystemImpl messageSystem;
-    private DBServiceImpl dbService;
+    private static MessageSystemImpl messageSystem;
+    private static DBServiceImpl dbService;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception {
 
         messageSystem = new MessageSystemImpl();
 
