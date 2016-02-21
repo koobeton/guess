@@ -38,6 +38,8 @@ public class PageGenerator {
     private static final String DM_GAME_OVER = FRONTEND_RESOURCE.getDmGameOver();
     private static final String DM_GOAL = FRONTEND_RESOURCE.getDmGoal();
     private static final String DM_HIGH_SCORES = FRONTEND_RESOURCE.getDmHighScores();
+    private static final String DM_TIME_FORMAT = FRONTEND_RESOURCE.getDmTimeFormat();
+    private static final String DM_TIME_FORMAT_MS = FRONTEND_RESOURCE.getDmTimeFormatMs();
 
     private static final String TEMPLATE_LOADER = FRONTEND_RESOURCE.getTemplateLoader();
     private static final String CORE_PAGE = FRONTEND_RESOURCE.getCorePage();
@@ -69,7 +71,7 @@ public class PageGenerator {
         dataModel.put(DM_NAME, name);
         dataModel.put(DM_USER_ID, userId);
         dataModel.put(DM_DURATION,
-                duration != null ? TimeHelper.formatTime(duration) : null);
+                duration != null ? TimeHelper.formatTime(duration, DM_TIME_FORMAT) : null);
         return dataModel;
     }
 
@@ -146,6 +148,7 @@ public class PageGenerator {
         int attempts = userSession.getGameReplica().getAttempts();
 
         Map<String, Object> dataModel = getDataModel(sessionId, name, userId, duration);
+        dataModel.put(DM_DURATION, TimeHelper.formatTime(duration, DM_TIME_FORMAT_MS));
         Map<String, Object> gameOverHash = new HashMap<>();
         gameOverHash.put(DM_GOAL, goal);
         gameOverHash.put(DM_ATTEMPTS, attempts);
@@ -154,7 +157,7 @@ public class PageGenerator {
             Map<String, Object> scoreHash = new HashMap<>();
             scoreHash.put(DM_NAME, score.getName());
             scoreHash.put(DM_ATTEMPTS, score.getAttempts());
-            scoreHash.put(DM_DURATION, TimeHelper.formatTime(score.getTime()));
+            scoreHash.put(DM_DURATION, TimeHelper.formatTime(score.getTime(), DM_TIME_FORMAT_MS));
             highScoresSequence.add(scoreHash);
         }
         gameOverHash.put(DM_HIGH_SCORES, highScoresSequence);

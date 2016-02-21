@@ -19,8 +19,8 @@ public class TimeHelper {
         return new Date().getTime();
     }
 
-    public static String formatTime(long time) {
-        DateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
+    public static String formatTime(long time, String format) {
+        DateFormat formatter = new SimpleDateFormat(format);
         formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
         return formatter.format(new Date(time));
     }

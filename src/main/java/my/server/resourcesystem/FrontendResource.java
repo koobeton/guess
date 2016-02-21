@@ -27,6 +27,8 @@ public class FrontendResource implements Resource {
     private String dmGameOver;
     private String dmGoal;
     private String dmHighScores;
+    private String dmTimeFormat;
+    private String dmTimeFormatMs;
 
     public String getSessionId() {
         return sessionId;
@@ -118,5 +120,13 @@ public class FrontendResource implements Resource {
 
     public String getDmGoal() {
         return dmGoal;
+    }
+
+    public String getDmTimeFormat() {
+        return dmTimeFormat;
+    }
+
+    public String getDmTimeFormatMs() {
+        return dmTimeFormatMs;
     }
 }

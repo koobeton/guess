@@ -22,4 +22,6 @@
     <dmGameOver>gameOver</dmGameOver>
     <dmGoal>goal</dmGoal>
     <dmHighScores>highScores</dmHighScores>
+    <dmTimeFormat>HH:mm:ss</dmTimeFormat>
+    <dmTimeFormatMs>HH:mm:ss.SSS</dmTimeFormatMs>
 </class>
