@@ -7,6 +7,7 @@ import my.server.base.Results;
 import my.server.frontend.UserSession;
 import my.server.resourcesystem.FrontendResource;
 import my.server.resourcesystem.ResourceFactory;
+import my.server.utils.JSONHelper;
 import my.server.utils.TimeHelper;
 
 import java.io.File;
@@ -163,5 +164,17 @@ public class PageGenerator {
         gameOverHash.put(DM_HIGH_SCORES, highScoresSequence);
         dataModel.put(DM_GAME_OVER, gameOverHash);
         return getPage(dataModel);
+    }
+
+    public static String getDurationJSON(UserSession userSession) {
+        return JSONHelper.toJSONString(
+                DM_DURATION,
+                TimeHelper.formatTime(
+                        userSession.getGameSessionDuration(),
+                        userSession.getState().equals(UserSession.State.GAME_OVER)
+                                ? DM_TIME_FORMAT_MS
+                                : DM_TIME_FORMAT
+                )
+        );
     }
 }

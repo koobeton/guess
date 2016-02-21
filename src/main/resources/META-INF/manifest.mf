@@ -1,5 +1,5 @@
-Class-Path: lib/jetty/jetty-all-8.1.9.v20130131.jar
-    lib/jetty/servlet-api-3.0.jar
+Class-Path: lib/jetty/jetty-all-9.2.6.v20141205.jar
+    lib/jetty/javax.servlet-api-3.1.0.jar
     lib/connectorj/mysql-connector-java-5.1.35-bin.jar
     lib/hibernate/hibernate-core-4.2.20.Final.jar
     lib/hibernate/dom4j-1.6.1.jar
@@ -9,4 +9,5 @@ Class-Path: lib/jetty/jetty-all-8.1.9.v20130131.jar
     lib/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar
     lib/hibernate/javassist-3.18.1-GA.jar
     lib/freemarker/freemarker.jar
+    lib/json/javax.json-1.0.4.jar
 Main-Class: my.server.main.Main

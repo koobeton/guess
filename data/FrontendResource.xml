@@ -3,7 +3,7 @@
 	<userName>userName</userName>
 	<startGame>startGame</startGame>
 	<turn>turn</turn>
-	<sleepTime>10</sleepTime>
+	<sleepTime>100</sleepTime>
     <templateLoader>ftl</templateLoader>
 	<corePage>corepage.ftl</corePage>
 	<dmSessionId>sessionId</dmSessionId>
@@ -24,4 +24,5 @@
     <dmHighScores>highScores</dmHighScores>
     <dmTimeFormat>HH:mm:ss</dmTimeFormat>
     <dmTimeFormatMs>HH:mm:ss.SSS</dmTimeFormatMs>
+    <webSocketIdleTimeout>60000</webSocketIdleTimeout>
 </class>

@@ -29,6 +29,7 @@ public class FrontendResource implements Resource {
     private String dmHighScores;
     private String dmTimeFormat;
     private String dmTimeFormatMs;
+    private long webSocketIdleTimeout;
 
     public String getSessionId() {
         return sessionId;
@@ -128,5 +129,9 @@ public class FrontendResource implements Resource {
 
     public String getDmTimeFormatMs() {
         return dmTimeFormatMs;
+    }
+
+    public long getWebSocketIdleTimeout() {
+        return webSocketIdleTimeout;
     }
 }

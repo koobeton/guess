@@ -2,13 +2,16 @@ package my.server.frontend;
 
 import my.server.base.*;
 import my.server.frontend.html.PageGenerator;
+import my.server.frontend.ws.UserWebSocketCreator;
+import my.server.frontend.ws.WebSocketService;
 import my.server.resourcesystem.DBResource;
 import my.server.resourcesystem.FrontendResource;
 import my.server.resourcesystem.ResourceFactory;
 import my.server.utils.TimeHelper;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -18,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static my.server.frontend.UserSession.State.*;
 
-public class FrontendImpl extends HttpServlet implements Frontend {
+public class FrontendImpl extends WebSocketServlet implements Frontend {
 
     private static final FrontendResource FRONTEND_RESOURCE =
             (FrontendResource) ResourceFactory.instance().getResource("./data/FrontendResource.xml");
@@ -31,16 +34,26 @@ public class FrontendImpl extends HttpServlet implements Frontend {
     private static final String START_GAME = FRONTEND_RESOURCE.getStartGame();
     private static final String TURN = FRONTEND_RESOURCE.getTurn();
     private static final int SLEEP_TIME = FRONTEND_RESOURCE.getSleepTime();
+    private static final long WS_IDLE_TIMEOUT = FRONTEND_RESOURCE.getWebSocketIdleTimeout();
 
     private Map<Integer, UserSession> sessionIdToUserSession = new ConcurrentHashMap<>();
     private Address address;
     private MessageSystem ms;
     private List<Results> highScores;
+    private WebSocketService webSocketService;
 
     public FrontendImpl(MessageSystem ms) {
         this.ms = ms;
         this.address = new Address();
         this.highScores = null;
+        this.webSocketService = new WebSocketService();
+        new Thread(webSocketService).start();
+    }
+
+    @Override
+    public void configure(WebSocketServletFactory webSocketServletFactory) {
+        webSocketServletFactory.getPolicy().setIdleTimeout(WS_IDLE_TIMEOUT);
+        webSocketServletFactory.setCreator(new UserWebSocketCreator(webSocketService));
     }
 
     @Override
@@ -159,7 +172,7 @@ public class FrontendImpl extends HttpServlet implements Frontend {
 
     @Override
     public void run() {
-        while(true){
+        while(true) {
             ms.execForAbonent(this);
             TimeHelper.sleep(SLEEP_TIME);
         }
@@ -182,7 +195,9 @@ public class FrontendImpl extends HttpServlet implements Frontend {
 
     @Override
     public void setGameSessionDuration(int sessionId, long duration) {
-        sessionIdToUserSession.get(sessionId).setGameSessionDuration(duration);
+        UserSession userSession = sessionIdToUserSession.get(sessionId);
+        userSession.setGameSessionDuration(duration);
+        webSocketService.sendMessage(sessionId, PageGenerator.getDurationJSON(userSession));
     }
 
     @Override

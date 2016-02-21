@@ -3,15 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Guess the number</title>
-    <#if refreshable??>
-        <script type='text/JavaScript'>
-            function refresh(){
-                document.forms[0].submit();
+
+    <script type="text/javascript">
+
+        var ws;
+        var sessionId = ${sessionId};
+
+        init = function () {
+            ws = new WebSocket("ws://localhost:8080/");
+
+            ws.onopen = function (event) {
+                sendMessage(JSON.stringify({sessionId : sessionId}));
             }
-        </script>
-    </#if>
+
+            ws.onmessage = function (event) {
+                var data = JSON.parse(event.data);
+                document.getElementById("duration").innerHTML = data.duration;
+            }
+
+            ws.onclose = function (event) {
+
+            }
+        };
+
+        function sendMessage(message) {
+            ws.send(message);
+        };
+
+        function refresh() {
+            document.forms[0].submit();
+        }
+
+    </script>
 </head>
-<body<#if refreshable??> onload='setInterval(function(){refresh()}, 1000);'</#if>>
+<body onload="init();<#if refreshable??> setInterval(function(){refresh()}, 1000);</#if>">
     <form action="" method="post">
 
         <#-- Header -->
@@ -21,7 +46,7 @@
 					<td>Session ID: <b>${sessionId}</b></td>
 					<#if name??><td>User name: <b>${name}</b></td></#if>
 					<#if userId??><td>User ID: <b>${userId}</b></td></#if>
-					<#if duration??><td>Duration: <b>${duration}</b></td></#if>
+					<#if duration??><td>Duration: <b><span id="duration">${duration}</span></b></td></#if>
 				</tr>
 			</table>  
         <hr>
