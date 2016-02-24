@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static my.server.frontend.UserSession.State.*;
 
@@ -69,83 +71,160 @@ public class FrontendImpl extends WebSocketServlet implements Frontend {
         resp.setContentType("text/html; charset=utf-8");
         resp.setStatus(HttpServletResponse.SC_OK);
 
-        UserSession userSession;
-        int sessionId;
+        String sessionIdParameter = req.getParameter(SESSION_ID);
+        UserSession userSession = getUserSession(sessionIdParameter);
         String answer = null;
-
-        if (req.getParameter(SESSION_ID) == null) {
-            userSession = new UserSession();
-            sessionIdToUserSession.put(userSession.getSessionId(), userSession);
-        } else {
-            sessionId = Integer.parseInt(req.getParameter(SESSION_ID));
-            userSession = sessionIdToUserSession.get(sessionId);
-        }
 
         switch (userSession.getState()) {
             case INITIAL_STATE:
-                userSession.setState(WAIT_FOR_NAME);
-                answer = PageGenerator.getRequestNamePage(userSession);
+                answer = handleInitialState(userSession,
+                        PageGenerator::getRequestNamePage);
                 break;
             case WAIT_FOR_NAME:
-                String providedUserName = req.getParameter(USER_NAME);
-                if (providedUserName != null) {
-                    userSession.setUserName(providedUserName);
-                    Address addressDBS = ms.getAddressService().getAddressDBS();
-                    ms.sendMessage(new MsgGetUserId(getAddress(), addressDBS, userSession.getSessionId(), providedUserName));
-                    userSession.setState(WAIT_FOR_AUTHORIZATION);
-                    answer = PageGenerator.getWaitAuthorizationPage(userSession);
-                }
+                String userNameParameter = req.getParameter(USER_NAME);
+                answer = handleWaitForName(userSession,
+                        PageGenerator::getWaitAuthorizationPage,
+                        userNameParameter);
                 break;
             case WAIT_FOR_AUTHORIZATION:
-                if (userSession.getUserId() != UNAUTHORIZED_ID) {
-                    userSession.setState(AUTHORIZATION_OK);
-                }
-                answer = PageGenerator.getWaitAuthorizationPage(userSession);
+                answer = handleWaitForAuthorization(userSession,
+                        PageGenerator::getWaitAuthorizationPage);
                 break;
             case AUTHORIZATION_OK:
-                if (req.getParameter(START_GAME) == null) {
-                    answer = PageGenerator.getAuthorizationOKPage(userSession);
-                } else {
-                    Address addressGM = ms.getAddressService().getAddressGM();
-                    ms.sendMessage(new MsgStartGameSession(
-                            getAddress(),
-                            addressGM,
-                            userSession.getSessionId(),
-                            userSession.getUserId())
-                    );
-                    answer = handleReplica(userSession);
-                }
+                String startGameParameter = req.getParameter(START_GAME);
+                answer = handleAuthorizationOK(userSession,
+                        PageGenerator::getAuthorizationOKPage,
+                        PageGenerator::getGamePage,
+                        PageGenerator::getGameOverPage,
+                        startGameParameter);
                 break;
             case GAME_STARTED:
-                if (req.getParameter(TURN) == null) {
-                    userSession.restoreGameReplica();
-                } else {
-                    int turn = Integer.parseInt(req.getParameter(TURN));
-                    Address addressGM = ms.getAddressService().getAddressGM();
-                    ms.sendMessage(new MsgHandleTurn(getAddress(), addressGM, userSession.getSessionId(), turn));
-                }
-                answer = handleReplica(userSession);
+                String turnParameter = req.getParameter(TURN);
+                answer = handleGameStarted(userSession,
+                        PageGenerator::getGamePage,
+                        PageGenerator::getGameOverPage,
+                        turnParameter);
                 break;
             case GAME_OVER:
-                if (req.getParameter(START_GAME) == null) {
-                    userSession.restoreGameReplica();
-                } else {
-                    Address addressGM = ms.getAddressService().getAddressGM();
-                    ms.sendMessage(new MsgStartGameSession(
-                            getAddress(),
-                            addressGM,
-                            userSession.getSessionId(),
-                            userSession.getUserId())
-                    );
-                }
-                answer = handleReplica(userSession);
+                startGameParameter = req.getParameter(START_GAME);
+                answer = handleGameOver(userSession,
+                        PageGenerator::getGamePage,
+                        PageGenerator::getGameOverPage,
+                        startGameParameter);
                 break;
         }
 
         resp.getWriter().println(answer);
     }
 
-    private String handleReplica(UserSession userSession) {
+    private UserSession getUserSession(String sessionId) {
+
+        UserSession userSession;
+
+        if (sessionId == null) {
+            userSession = new UserSession();
+            sessionIdToUserSession.put(userSession.getSessionId(), userSession);
+        } else {
+            userSession = sessionIdToUserSession.get(Integer.parseInt(sessionId));
+        }
+
+        return userSession;
+    }
+
+    private String handleInitialState(UserSession userSession,
+                                      Function<UserSession, String> replyToSender) {
+
+        userSession.setState(WAIT_FOR_NAME);
+        return replyToSender.apply(userSession);
+    }
+
+    private String handleWaitForName(UserSession userSession,
+                                     Function<UserSession, String> replyToSender,
+                                     String providedUserName) {
+
+        if (providedUserName != null) {
+            userSession.setUserName(providedUserName);
+            Address addressDBS = ms.getAddressService().getAddressDBS();
+            ms.sendMessage(new MsgGetUserId(getAddress(), addressDBS, userSession.getSessionId(), providedUserName));
+            userSession.setState(WAIT_FOR_AUTHORIZATION);
+        }
+        return replyToSender.apply(userSession);
+    }
+
+    private String handleWaitForAuthorization(UserSession userSession,
+                                              Function<UserSession, String> replyToSender) {
+
+        if (userSession.getUserId() != UNAUTHORIZED_ID) {
+            userSession.setState(AUTHORIZATION_OK);
+        }
+        return replyToSender.apply(userSession);
+    }
+
+    private String handleAuthorizationOK(UserSession userSession,
+                                         Function<UserSession, String> replyToSenderAuthorizationOK,
+                                         Function<UserSession, String> replyToSenderGameStarted,
+                                         BiFunction<UserSession, List<Results>, String> replyToSenderGameOver,
+                                         String startGame) {
+
+        String answer;
+
+        if (startGame == null) {
+            answer = replyToSenderAuthorizationOK.apply(userSession);
+        } else {
+            Address addressGM = ms.getAddressService().getAddressGM();
+            ms.sendMessage(new MsgStartGameSession(
+                    getAddress(),
+                    addressGM,
+                    userSession.getSessionId(),
+                    userSession.getUserId())
+            );
+            answer = handleReplica(userSession, replyToSenderGameStarted, replyToSenderGameOver);
+        }
+
+        return answer;
+    }
+
+    private String handleGameStarted(UserSession userSession,
+                                     Function<UserSession, String> replyToSenderGameStarted,
+                                     BiFunction<UserSession, List<Results>, String> replyToSenderGameOver,
+                                     String turn) {
+
+        if (turn == null) {
+            userSession.restoreGameReplica();
+        } else {
+            Address addressGM = ms.getAddressService().getAddressGM();
+            ms.sendMessage(new MsgHandleTurn(
+                    getAddress(),
+                    addressGM,
+                    userSession.getSessionId(),
+                    Integer.parseInt(turn))
+            );
+        }
+        return handleReplica(userSession, replyToSenderGameStarted, replyToSenderGameOver);
+    }
+
+    private String handleGameOver(UserSession userSession,
+                                  Function<UserSession, String> replyToSenderGameStarted,
+                                  BiFunction<UserSession, List<Results>, String> replyToSenderGameOver,
+                                  String startGame) {
+
+        if (startGame == null) {
+            userSession.restoreGameReplica();
+        } else {
+            Address addressGM = ms.getAddressService().getAddressGM();
+            ms.sendMessage(new MsgStartGameSession(
+                    getAddress(),
+                    addressGM,
+                    userSession.getSessionId(),
+                    userSession.getUserId())
+            );
+        }
+        return handleReplica(userSession, replyToSenderGameStarted, replyToSenderGameOver);
+    }
+
+    private String handleReplica(UserSession userSession,
+                                 Function<UserSession, String> replyToSenderGameStarted,
+                                 BiFunction<UserSession, List<Results>, String> replyToSenderGameOver) {
 
         String answer;
 
@@ -160,11 +239,11 @@ public class FrontendImpl extends WebSocketServlet implements Frontend {
             while (highScores == null) {
                 TimeHelper.sleep(SLEEP_TIME);
             }
-            answer = PageGenerator.getGameOverPage(userSession, highScores);
+            answer = replyToSenderGameOver.apply(userSession, highScores);
             highScores = null;
         } else {
             userSession.setState(GAME_STARTED);
-            answer = PageGenerator.getGamePage(userSession);
+            answer = replyToSenderGameStarted.apply(userSession);
         }
         userSession.setGameReplica(null);
         return answer;
