@@ -9,7 +9,8 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
-import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 
 @WebSocket
 public class UserWebSocket {
@@ -17,6 +18,7 @@ public class UserWebSocket {
     private static final FrontendResource FRONTEND_RESOURCE =
             (FrontendResource) ResourceFactory.instance().getResource("./data/FrontendResource.xml");
     private static final String SESSION_ID = FRONTEND_RESOURCE.getSessionId();
+    private static final String TURN = FRONTEND_RESOURCE.getTurn();
 
     private WebSocketService webSocketService;
     private Session session;
@@ -37,9 +39,22 @@ public class UserWebSocket {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, Reader reader) {
-        setSessionId(JSONHelper.readInt(SESSION_ID, reader));
-        webSocketService.addWebSocket(this);
+    public void onMessage(Session session, String text) {
+
+        Integer sessionIdValue = JSONHelper.readInt(SESSION_ID, text);
+        String turnValue = JSONHelper.readString(TURN, text);
+
+        if (sessionIdValue != null) {
+            setSessionId(sessionIdValue);
+            webSocketService.addWebSocket(this);
+        }
+
+        if (turnValue != null) {
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put(SESSION_ID, Integer.toString(getSessionId()));
+            parameters.put(TURN, turnValue);
+            webSocketService.handleMessage(parameters);
+        }
     }
 
     public Session getSession() {

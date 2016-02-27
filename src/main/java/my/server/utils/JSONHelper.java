@@ -1,27 +1,50 @@
 package my.server.utils;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonWriter;
-import java.io.Reader;
+import javax.json.*;
+import java.io.StringReader;
 import java.io.StringWriter;
 
 public class JSONHelper {
 
-    public static int readInt(String key, Reader reader) {
+    private JsonObjectBuilder builder = Json.createObjectBuilder();
 
-        JsonReader jsonReader = Json.createReader(reader);
-        JsonObject jsonObject = jsonReader.readObject();
-        int value = jsonObject.getInt(key);
-        jsonReader.close();
+    public static Integer readInt(String key, String jsonString) {
 
-        return value;
+        JsonNumber jsonNumber = getJsonObject(jsonString).getJsonNumber(key);
+        return jsonNumber != null ? jsonNumber.intValue() : null;
     }
 
-    public static String toJSONString(String key, String value) {
+    public static String readString(String key, String jsonString) {
 
-        JsonObject jsonObject = Json.createObjectBuilder().add(key, value).build();
+        return getJsonObject(jsonString).getString(key, null);
+    }
+
+    private static JsonObject getJsonObject(String jsonString) {
+
+        JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
+        JsonObject jsonObject = jsonReader.readObject();
+        jsonReader.close();
+        return jsonObject;
+    }
+
+    public JSONHelper put(String key, String value) {
+        builder.add(key, value);
+        return this;
+    }
+
+    public JSONHelper put(String key, int value) {
+        builder.add(key, value);
+        return this;
+    }
+
+    public JSONHelper put(String key, boolean value) {
+        builder.add(key, value);
+        return this;
+    }
+
+    public String toJSONString() {
+
+        JsonObject jsonObject = builder.build();
 
         StringWriter stringWriter = new StringWriter();
         JsonWriter jsonWriter = Json.createWriter(stringWriter);

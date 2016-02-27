@@ -18,7 +18,26 @@
 
             ws.onmessage = function (event) {
                 var data = JSON.parse(event.data);
-                document.getElementById("duration").innerHTML = data.duration;
+
+                if ("duration" in data) {
+                    document.getElementById("duration").innerHTML = data.duration;
+                }
+
+                if ("attempts" in data && "message" in data) {
+                    document.getElementById("gameReplica.attempts").innerHTML = data.attempts;
+                    document.getElementById("gameReplica.message.tableCell").style = "display : table-cell";
+                    if (data.message == "Less") {
+                        document.getElementById("gameReplica.message.tableCell").style = "background-color : red";
+                    }
+                    if (data.message == "More") {
+                        document.getElementById("gameReplica.message.tableCell").style = "background-color : green";
+                    }
+                    document.getElementById("gameReplica.message").innerHTML = data.message;
+                }
+
+                if ("gameOver" in data && data.gameOver == true) {
+                    refresh();
+                }
             }
 
             ws.onclose = function (event) {
@@ -32,6 +51,17 @@
 
         function refresh() {
             document.forms[0].submit();
+        };
+
+        function sendTurn() {
+            var turnInput = document.getElementsByName("turn")[0];
+            if (turnInput.value != ""
+                    && +turnInput.value >= turnInput.min
+                    && +turnInput.value <= turnInput.max) {
+                sendMessage(JSON.stringify({turn : turnInput.value}));
+            }
+            document.forms[0].reset();
+            turnInput.focus();
         }
 
     </script>
@@ -81,19 +111,21 @@
                        min="${gameReplica.lower}" max="${gameReplica.upper}" step="1"
                        required autofocus placeholder="${gameReplica.lower} ... ${gameReplica.upper}"
                 >
-                <input type="submit" value="Play!">
+                <input type="button" value="Play!" onclick="sendTurn();">
             </p>
             <hr>
             <table border cellpadding="3">
                 <tr>
-                    <td>Attempts: <b>${gameReplica.attempts}</b></td>
-                    <#if gameReplica.message??>
-                        <td<#if gameReplica.message == "Less"> bgcolor="red"</#if>
-                           <#if gameReplica.message == "More"> bgcolor="green"</#if>
-                        >
-                            Goal: <b>${gameReplica.message}</b>
-                        </td>
-                    </#if>
+                    <td>Attempts: <b><span id="gameReplica.attempts">${gameReplica.attempts}</span></b></td>
+                    <td id="gameReplica.message.tableCell"
+                        <#if gameReplica.message??> style="display : table-cell"
+                            <#if gameReplica.message == "Less"> bgcolor="red"</#if>
+                            <#if gameReplica.message == "More"> bgcolor="green"</#if>
+                        <#else> style="display : none"
+                        </#if>
+                    >
+                        Goal: <b><span id="gameReplica.message"><#if gameReplica.message??>${gameReplica.message}</#if></span></b>
+                    </td>
                 </tr>
             </table>
         </#if>

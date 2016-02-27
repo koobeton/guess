@@ -166,15 +166,34 @@ public class PageGenerator {
         return getPage(dataModel);
     }
 
+    public static String getGameJSON(UserSession userSession) {
+
+        String message = userSession.getGameReplica().getMessage();
+        int attempts = userSession.getGameReplica().getAttempts();
+
+        return new JSONHelper()
+                .put(DM_MESSAGE, message)
+                .put(DM_ATTEMPTS, attempts)
+                .toJSONString();
+    }
+
+    public static String getGameOverJSON(UserSession userSession, List<Results> highScores) {
+
+        boolean gameOver = userSession.getGameReplica().isGameOver();
+        return new JSONHelper().put(DM_GAME_OVER, gameOver).toJSONString();
+    }
+
     public static String getDurationJSON(UserSession userSession) {
-        return JSONHelper.toJSONString(
-                DM_DURATION,
-                TimeHelper.formatTime(
-                        userSession.getGameSessionDuration(),
-                        userSession.getState().equals(UserSession.State.GAME_OVER)
-                                ? DM_TIME_FORMAT_MS
-                                : DM_TIME_FORMAT
+        return new JSONHelper()
+                .put(
+                        DM_DURATION,
+                        TimeHelper.formatTime(
+                                userSession.getGameSessionDuration(),
+                                userSession.getState().equals(UserSession.State.GAME_OVER)
+                                        ? DM_TIME_FORMAT_MS
+                                        : DM_TIME_FORMAT
+                        )
                 )
-        );
+                .toJSONString();
     }
 }

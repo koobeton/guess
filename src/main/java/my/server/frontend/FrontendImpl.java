@@ -48,7 +48,7 @@ public class FrontendImpl extends WebSocketServlet implements Frontend {
         this.ms = ms;
         this.address = new Address();
         this.highScores = null;
-        this.webSocketService = new WebSocketService();
+        this.webSocketService = new WebSocketService(this);
         new Thread(webSocketService).start();
     }
 
@@ -115,6 +115,31 @@ public class FrontendImpl extends WebSocketServlet implements Frontend {
         }
 
         resp.getWriter().println(answer);
+    }
+
+    public void doWebSocket(Map<String, String> parameters) {
+
+        String sessionIdParameter = parameters.get(SESSION_ID);
+        UserSession userSession = getUserSession(sessionIdParameter);
+        String answer = null;
+
+        switch (userSession.getState()) {
+            case GAME_STARTED:
+                String turnParameter = parameters.get(TURN);
+                answer = handleGameStarted(userSession,
+                        PageGenerator::getGameJSON,
+                        PageGenerator::getGameOverJSON,
+                        turnParameter);
+                break;
+            case GAME_OVER:
+                answer = handleGameOver(userSession,
+                        PageGenerator::getGameJSON,
+                        PageGenerator::getGameOverJSON,
+                        null);
+                break;
+        }
+
+        webSocketService.sendMessage(userSession.getSessionId(), answer);
     }
 
     private UserSession getUserSession(String sessionId) {

@@ -1,5 +1,6 @@
 package my.server.frontend.ws;
 
+import my.server.frontend.FrontendImpl;
 import my.server.resourcesystem.FrontendResource;
 import my.server.resourcesystem.ResourceFactory;
 import my.server.utils.TimeHelper;
@@ -16,8 +17,15 @@ public class WebSocketService implements Runnable {
             (FrontendResource) ResourceFactory.instance().getResource("./data/FrontendResource.xml");
     private static final int SLEEP_TIME = FRONTEND_RESOURCE.getSleepTime();
 
-    private Map<Integer, UserWebSocket> sockets = new ConcurrentHashMap<>();
-    private Queue<Map<Integer, String>> queue = new ConcurrentLinkedQueue<>();
+    private FrontendImpl frontend;
+    private Map<Integer, UserWebSocket> sockets;
+    private Queue<Map<Integer, String>> queue;
+
+    public WebSocketService(FrontendImpl frontend) {
+        this.frontend = frontend;
+        this.sockets = new ConcurrentHashMap<>();
+        this.queue = new ConcurrentLinkedQueue<>();
+    }
 
     public void addWebSocket(UserWebSocket webSocket) {
         sockets.put(webSocket.getSessionId(), webSocket);
@@ -29,6 +37,10 @@ public class WebSocketService implements Runnable {
 
     public void sendMessage(int sessionId, String msg) {
         queue.add(Collections.singletonMap(sessionId, msg));
+    }
+
+    public void handleMessage(Map<String, String> parameters) {
+        frontend.doWebSocket(parameters);
     }
 
     @Override
